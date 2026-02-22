@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hello Claw 🦞</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    :root {
+      --bg-primary: #0f0c29;
+      --bg-secondary: #1a1a3e;
+      --bg-card: rgba(255,255,255,0.05);
+      --border: rgba(255,255,255,0.1);
+      --accent: #f97316;
+      --accent-glow: rgba(249,115,22,0.3);
+      --green: #4ade80;
+      --text: #fff;
+      --text-muted: #94a3b8;
+    }
+
+    body {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      color: var(--text);
+      padding: 1rem;
+    }
+
+    /* Header */
+    .header {
+      text-align: center;
+      padding: 2rem 1rem 1rem;
+    }
+    .header .emoji { font-size: 3rem; }
+    .header h1 { font-size: 1.8rem; margin: 0.5rem 0 0.25rem; }
+    .header p { color: var(--text-muted); font-size: 0.9rem; }
+    .status-badge {
+      display: inline-block;
+      padding: 0.3rem 1rem;
+      background: rgba(74,222,128,0.15);
+      border: 1px solid rgba(74,222,128,0.3);
+      border-radius: 999px;
+      font-size: 0.75rem;
+      color: var(--green);
+      margin-top: 0.75rem;
+    }
+
+    /* Layout */
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1rem;
+      max-width: 900px;
+      margin: 1.5rem auto;
+    }
+    @media (min-width: 640px) {
+      .grid { grid-template-columns: 1fr 1fr; }
+    }
+
+    /* Card */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.25rem;
+      backdrop-filter: blur(10px);
+      transition: border-color 0.2s;
+    }
+    .card:hover { border-color: rgba(255,255,255,0.2); }
+    .card-title {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .card-title span { font-size: 1.1rem; }
+
+    /* ===== CALCULATOR ===== */
+    .calc-display {
+      background: rgba(0,0,0,0.3);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 0.75rem 1rem;
+      margin-bottom: 0.75rem;
+      text-align: right;
+      min-height: 3.5rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .calc-expression {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      min-height: 1rem;
+    }
+    .calc-result {
+      font-size: 1.8rem;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+    }
+    .calc-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.4rem;
+    }
+    .calc-btn {
+      padding: 0.7rem;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+      background: rgba(255,255,255,0.08);
+      color: var(--text);
+    }
+    .calc-btn:hover { background: rgba(255,255,255,0.15); }
+    .calc-btn:active { transform: scale(0.95); }
+    .calc-btn.op {
+      background: rgba(249,115,22,0.2);
+      color: var(--accent);
+    }
+    .calc-btn.op:hover { background: rgba(249,115,22,0.35); }
+    .calc-btn.eq {
+      background: var(--accent);
+      color: #fff;
+    }
+    .calc-btn.eq:hover { background: #ea580c; }
+    .calc-btn.clear {
+      background: rgba(239,68,68,0.2);
+      color: #f87171;
+    }
+    .calc-btn.clear:hover { background: rgba(239,68,68,0.35); }
+
+    /* ===== SNAKE GAME ===== */
+    .game-wrapper { text-align: center; }
+    .game-hud {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.75rem;
+      font-size: 0.85rem;
+    }
+    .game-score {
+      font-weight: 700;
+      font-size: 1.2rem;
+      color: var(--accent);
+    }
+    .game-high {
+      color: var(--text-muted);
+      font-size: 0.75rem;
+    }
+    canvas#snake {
+      width: 100%;
+      aspect-ratio: 1;
+      max-width: 400px;
+      border-radius: 12px;
+      background: rgba(0,0,0,0.3);
+      border: 1px solid var(--border);
+      display: block;
+      margin: 0 auto;
+      touch-action: none;
+    }
+    .game-controls {
+      display: grid;
+      grid-template-areas:
+        ". up ."
+        "left down right";
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.3rem;
+      max-width: 200px;
+      margin: 0.75rem auto 0;
+    }
+    .game-btn {
+      padding: 0.6rem;
+      border: none;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.08);
+      color: var(--text);
+      font-size: 1.2rem;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .game-btn:hover { background: rgba(255,255,255,0.15); }
+    .game-btn:active { transform: scale(0.9); }
+    .game-btn.up { grid-area: up; }
+    .game-btn.down { grid-area: down; }
+    .game-btn.left { grid-area: left; }
+    .game-btn.right { grid-area: right; }
+    .game-msg {
+      margin-top: 0.5rem;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    /* Footer */
+    .footer {
+      text-align: center;
+      padding: 2rem 1rem 1rem;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    /* Backend panel */
+    .stat-box {
+      background: rgba(0,0,0,0.2);
+      border-radius: 10px;
+      padding: 0.6rem 0.8rem;
+      text-align: center;
+    }
+    .stat-label {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: 0.25rem;
+    }
+    .stat-value {
+      font-size: 0.95rem;
+      font-weight: 600;
+    }
+    .api-btn {
+      padding: 0.45rem 0.9rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: rgba(255,255,255,0.06);
+      color: var(--text);
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .api-btn:hover {
+      background: rgba(255,255,255,0.12);
+      border-color: rgba(255,255,255,0.25);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="emoji">🦞</div>
+    <h1>Hello, Claw!</h1>
+    <p>S3 + CloudFront로 서빙되는 정적 사이트</p>
+    <div class="status-badge">● LIVE</div>
+  </header>
+
+  <!-- Backend Status Card -->
+  <div class="grid" style="margin-bottom:0;">
+    <div class="card" style="grid-column: 1 / -1;">
+      <div class="card-title"><span>🔗</span> 백엔드 연결 상태</div>
+      <div id="backend-panel" style="display:grid; grid-template-columns:1fr; gap:0.75rem;">
+        <div style="text-align:center; padding:1rem; color:var(--text-muted);">연결 확인 중...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="grid">
+
+    <!-- Calculator -->
+    <div class="card">
+      <div class="card-title"><span>🧮</span> 계산기</div>
+      <div class="calc-display">
+        <div class="calc-expression" id="calc-expr"></div>
+        <div class="calc-result" id="calc-result">0</div>
+      </div>
+      <div class="calc-grid">
+        <button class="calc-btn clear" onclick="calcClear()">C</button>
+        <button class="calc-btn op" onclick="calcInput('(')">(</button>
+        <button class="calc-btn op" onclick="calcInput(')')">)</button>
+        <button class="calc-btn op" onclick="calcInput('÷')">÷</button>
+
+        <button class="calc-btn" onclick="calcInput('7')">7</button>
+        <button class="calc-btn" onclick="calcInput('8')">8</button>
+        <button class="calc-btn" onclick="calcInput('9')">9</button>
+        <button class="calc-btn op" onclick="calcInput('×')">×</button>
+
+        <button class="calc-btn" onclick="calcInput('4')">4</button>
+        <button class="calc-btn" onclick="calcInput('5')">5</button>
+        <button class="calc-btn" onclick="calcInput('6')">6</button>
+        <button class="calc-btn op" onclick="calcInput('-')">−</button>
+
+        <button class="calc-btn" onclick="calcInput('1')">1</button>
+        <button class="calc-btn" onclick="calcInput('2')">2</button>
+        <button name="calc-btn" class="calc-btn" onclick="calcInput('3')">3</button>
+        <button class="calc-btn op" onclick="calcInput('+')">+</button>
+
+        <button class="calc-btn" onclick="calcInput('0')" style="grid-column: span 2;">0</button>
+        <button class="calc-btn" onclick="calcInput('.')">.</button>
+        <button class="calc-btn eq" onclick="calcEqual()">=</button>
+      </div>
+    </div>
+
+    <!-- Snake Game -->
+    <div class="card">
+      <div class="card-title"><span>🐍</span> 스네이크 게임</div>
+      <div class="game-wrapper">
+        <div class="game-hud">
+          <div>
+            <div class="game-score" id="score">0</div>
+            <div class="game-high" id="high">최고: 0</div>
+          </div>
+          <button class="game-btn" onclick="resetGame()" style="font-size:0.8rem; padding:0.4rem 0.8rem;">⟳ 재시작</button>
+        </div>
+        <canvas id="snake" width="400" height="400"></canvas>
+        <div class="game-controls">
+          <button class="game-btn up" onclick="setDir(0,-1)">▲</button>
+          <button class="game-btn left" onclick="setDir(-1,0)">◀</button>
+          <button class="game-btn down" onclick="setDir(0,1)">▼</button>
+          <button class="game-btn right" onclick="setDir(1,0)">▶</button>
+        </div>
+        <div class="game-msg">방향키 또는 스와이프로 조작</div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    Powered by AWS S3 + CloudFront &middot; Built with 🦞 OpenClaw
+  </footer>
+
+  <script>
+    /* ========== CALCULATOR ========== */
+    let calcStr = '';
+    const exprEl = document.getElementById('calc-expr');
+    const resEl  = document.getElementById('calc-result');
+
+    function calcInput(ch) {
+      calcStr += ch;
+      resEl.textContent = calcStr;
+    }
+
+    function calcClear() {
+      calcStr = '';
+      exprEl.textContent = '';
+      resEl.textContent = '0';
+    }
+
+    function calcEqual() {
+      try {
+        const expr = calcStr.replace(/×/g,'*').replace(/÷/g,'/').replace(/−/g,'-');
+        const result = Function('"use strict"; return (' + expr + ')')();
+        exprEl.textContent = calcStr + ' =';
+        const formatted = Number.isInteger(result) ? result : parseFloat(result.toFixed(10));
+        resEl.textContent = formatted;
+        calcStr = String(formatted);
+      } catch(e) {
+        exprEl.textContent = calcStr;
+        resEl.textContent = 'Error';
+        calcStr = '';
+      }
+    }
+
+    // Keyboard support
+    document.addEventListener('keydown', e => {
+      if(e.target.tagName === 'INPUT') return;
+      const k = e.key;
+      if('0123456789.()'.includes(k)) calcInput(k);
+      else if(k === '+') calcInput('+');
+      else if(k === '-') calcInput('-');
+      else if(k === '*') calcInput('×');
+      else if(k === '/') { e.preventDefault(); calcInput('÷'); }
+      else if(k === 'Enter' || k === '=') calcEqual();
+      else if(k === 'Escape' || k === 'c' || k === 'C') calcClear();
+      else if(k === 'Backspace') { calcStr = calcStr.slice(0,-1); resEl.textContent = calcStr || '0'; }
+    });
+
+    /* ========== SNAKE GAME ========== */
+    const canvas = document.getElementById('snake');
+    const ctx = canvas.getContext('2d');
+    const GRID = 20;
+    const CELL = canvas.width / GRID;
+    
+    let snake, food, dir, nextDir, score, highScore, gameOver, speed, interval;
+
+    highScore = parseInt(localStorage.getItem('snakeHigh') || '0');
+    document.getElementById('high').textContent = '최고: ' + highScore;
+
+    function initGame() {
+      snake = [{x:10,y:10},{x:9,y:10},{x:8,y:10}];
+      dir = {x:1,y:0};
+      nextDir = {x:1,y:0};
+      score = 0;
+      gameOver = false;
+      speed = 120;
+      placeFood();
+      updateScore();
+    }
+
+    function placeFood() {
+      do {
+        food = { x: Math.floor(Math.random()*GRID), y: Math.floor(Math.random()*GRID) };
+      } while(snake.some(s => s.x===food.x && s.y===food.y));
+    }
+
+    function updateScore() {
+      document.getElementById('score').textContent = score;
+      if(score > highScore) {
+        highScore = score;
+        localStorage.setItem('snakeHigh', highScore);
+        document.getElementById('high').textContent = '최고: ' + highScore;
+      }
+    }
+
+    function setDir(x, y) {
+      if(gameOver) { resetGame(); return; }
+      // prevent reverse
+      if(dir.x === -x && dir.y === -y) return;
+      nextDir = {x, y};
+    }
+
+    function tick() {
+      if(gameOver) return;
+      dir = {...nextDir};
+      const head = { x: snake[0].x + dir.x, y: snake[0].y + dir.y };
+
+      // wall collision
+      if(head.x < 0 || head.x >= GRID || head.y < 0 || head.y >= GRID) { endGame(); return; }
+      // self collision
+      if(snake.some(s => s.x === head.x && s.y === head.y)) { endGame(); return; }
+
+      snake.unshift(head);
+      if(head.x === food.x && head.y === food.y) {
+        score += 10;
+        updateScore();
+        placeFood();
+        // speed up slightly
+        if(speed > 60) { speed -= 2; clearInterval(interval); interval = setInterval(tick, speed); }
+      } else {
+        snake.pop();
+      }
+      draw();
+    }
+
+    function endGame() {
+      gameOver = true;
+      clearInterval(interval);
+      draw();
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // grid dots
+      ctx.fillStyle = 'rgba(255,255,255,0.03)';
+      for(let i=0;i<GRID;i++) for(let j=0;j<GRID;j++) {
+        ctx.beginPath();
+        ctx.arc(i*CELL+CELL/2, j*CELL+CELL/2, 1, 0, Math.PI*2);
+        ctx.fill();
+      }
+
+      // food
+      ctx.fillStyle = '#f97316';
+      ctx.shadowColor = 'rgba(249,115,22,0.5)';
+      ctx.shadowBlur = 10;
+      roundRect(food.x*CELL+2, food.y*CELL+2, CELL-4, CELL-4, 4);
+      ctx.shadowBlur = 0;
+
+      // snake
+      snake.forEach((s, i) => {
+        const alpha = 1 - (i / snake.length) * 0.6;
+        ctx.fillStyle = i === 0
+          ? `rgba(74, 222, 128, ${alpha})`
+          : `rgba(74, 222, 128, ${alpha})`;
+        roundRect(s.x*CELL+1, s.y*CELL+1, CELL-2, CELL-2, i===0 ? 6 : 4);
+      });
+
+      // game over overlay
+      if(gameOver) {
+        ctx.fillStyle = 'rgba(0,0,0,0.6)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 24px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('Game Over!', canvas.width/2, canvas.height/2 - 10);
+        ctx.font = '14px sans-serif';
+        ctx.fillStyle = '#94a3b8';
+        ctx.fillText('탭하거나 아무 키를 눌러 재시작', canvas.width/2, canvas.height/2 + 20);
+      }
+    }
+
+    function roundRect(x, y, w, h, r) {
+      ctx.beginPath();
+      ctx.moveTo(x+r, y);
+      ctx.lineTo(x+w-r, y);
+      ctx.quadraticCurveTo(x+w, y, x+w, y+r);
+      ctx.lineTo(x+w, y+h-r);
+      ctx.quadraticCurveTo(x+w, y+h, x+w-r, y+h);
+      ctx.lineTo(x+r, y+h);
+      ctx.quadraticCurveTo(x, y+h, x, y+h-r);
+      ctx.lineTo(x, y+r);
+      ctx.quadraticCurveTo(x, y, x+r, y);
+      ctx.fill();
+    }
+
+    function resetGame() {
+      clearInterval(interval);
+      initGame();
+      draw();
+      interval = setInterval(tick, speed);
+    }
+
+    // Keyboard controls
+    document.addEventListener('keydown', e => {
+      const map = { ArrowUp:[0,-1], ArrowDown:[0,1], ArrowLeft:[-1,0], ArrowRight:[1,0], w:[0,-1], s:[0,1], a:[-1,0], d:[1,0] };
+      if(map[e.key]) { e.preventDefault(); setDir(...map[e.key]); }
+      if(gameOver && ['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key)) resetGame();
+    });
+
+    // Touch / swipe controls
+    let touchStart = null;
+    canvas.addEventListener('touchstart', e => {
+      touchStart = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    }, {passive: true});
+    canvas.addEventListener('touchend', e => {
+      if(!touchStart) return;
+      const dx = e.changedTouches[0].clientX - touchStart.x;
+      const dy = e.changedTouches[0].clientY - touchStart.y;
+      if(Math.abs(dx) < 10 && Math.abs(dy) < 10) { if(gameOver) resetGame(); return; }
+      if(Math.abs(dx) > Math.abs(dy)) setDir(dx > 0 ? 1 : -1, 0);
+      else setDir(0, dy > 0 ? 1 : -1);
+      touchStart = null;
+    }, {passive: true});
+
+    // Start
+    initGame();
+    draw();
+    interval = setInterval(tick, speed);
+
+    /* ========== BACKEND CONNECTION ========== */
+    const API_BASE = '';
+    const panel = document.getElementById('backend-panel');
+
+    async function checkBackend() {
+      try {
+        const res = await fetch(API_BASE + '/api/health', { signal: AbortSignal.timeout(5000) });
+        const data = await res.json();
+        panel.innerHTML = `
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:0.75rem;">
+            <div class="stat-box">
+              <div class="stat-label">상태</div>
+              <div class="stat-value" style="color:var(--green);">✅ 연결됨</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-label">서버</div>
+              <div class="stat-value">${data.server}</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-label">업타임</div>
+              <div class="stat-value">${data.uptime}</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-label">메모리</div>
+              <div class="stat-value">${data.memory}</div>
+            </div>
+          </div>
+          <div style="margin-top:0.5rem; display:flex; gap:0.5rem; flex-wrap:wrap;">
+            <button class="api-btn" onclick="callEcho()">📡 Echo 테스트</button>
+            <button class="api-btn" onclick="callRandom()">🎲 랜덤 팩트</button>
+            <button class="api-btn" onclick="checkBackend()">🔄 새로고침</button>
+          </div>
+          <div id="api-response" style="margin-top:0.5rem; padding:0.6rem; background:rgba(0,0,0,0.3); border-radius:8px; font-size:0.8rem; font-family:monospace; color:var(--green); min-height:1.5rem; word-break:break-all;"></div>
+        `;
+      } catch(e) {
+        panel.innerHTML = `
+          <div style="text-align:center; padding:1rem;">
+            <div style="color:#fbbf24; font-size:1.1rem; margin-bottom:0.5rem;">⏳ 백엔드 시작 중...</div>
+            <div style="color:var(--text-muted); font-size:0.8rem;">EC2 초기화 중입니다. 잠시 후 자동으로 다시 시도합니다.</div>
+          </div>
+        `;
+        setTimeout(checkBackend, 5000);
+      }
+    }
+
+    async function callEcho() {
+      const msg = prompt('Echo 메시지를 입력하세요:', 'Hello from CloudFront! 🦞');
+      if(!msg) return;
+      try {
+        const res = await fetch(API_BASE + '/api/echo?msg=' + encodeURIComponent(msg));
+        const data = await res.json();
+        document.getElementById('api-response').textContent = JSON.stringify(data, null, 2);
+      } catch(e) {
+        document.getElementById('api-response').textContent = 'Error: ' + e.message;
+      }
+    }
+
+    async function callRandom() {
+      try {
+        const res = await fetch(API_BASE + '/api/random');
+        const data = await res.json();
+        document.getElementById('api-response').textContent = data.fact;
+      } catch(e) {
+        document.getElementById('api-response').textContent = 'Error: ' + e.message;
+      }
+    }
+
+    checkBackend();
+  </script>
+</body>
+</html>
